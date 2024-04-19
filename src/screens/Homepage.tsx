@@ -1,9 +1,7 @@
 import { StyleSheet, Text, View, Image, TouchableOpacity,Button } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import axios from "axios";
-
-
+import { apiFacade } from './apiFacade';
 import { StackNavigationProp } from '@react-navigation/stack';
 type RootStackParamList = {
   Home: undefined;
@@ -11,8 +9,6 @@ type RootStackParamList = {
   Chart: undefined;
   // Add other screens here
 };
-const PORT = 3000;
-const HOST = '192.168.1.8';
 type NavigationProp = StackNavigationProp<RootStackParamList, 'Home'>;
 export const Homepage = () => {
   const navigation =  useNavigation<NavigationProp>();
@@ -20,41 +16,27 @@ export const Homepage = () => {
   const [data, setData] = useState(null);
   const refresh = async () =>{
     try {
-      const res = await axios.get(`http://${HOST}:${PORT}/record`);
-      console.log(res.data);
-      setData(res.data);
+      const data = await apiFacade.getRecord();
+      setData(data);
     } catch (error) {
       console.error(error);
     }    
   }
   useEffect(() => {
-    const getData = async () => {
-      try {
-        const res = await axios.get(`http://${HOST}:${PORT}/record`);
-        console.log(res.data);
-        setData(res.data);
-      } catch (error) {
-        console.error(error);
-      }
-    };
-    getData();
-    const intervalId = setInterval(getData, 10000);
+    refresh();
+    const intervalId = setInterval(refresh, 10000);
 
     // Clear the interval when the component unmounts
     return () => clearInterval(intervalId);
   }, []);
-  const swichlight = async () => {
-    const val = (data as any).light == 0 ? 1 : 0;
-    const res = await axios.post(`http://${HOST}:${PORT}/record/store`, {
-      light: val
-    });
+  const switchLight = async () => {
+    const val = (data as any).light == "1" ? 0 : 1;
+    await apiFacade.switchLight(val);
     refresh();
   };
-  const swichfan = async () => {
-    const val = (data as any).fan == 0 ? 100 : 0;
-    const res = await axios.post(`http://${HOST}:${PORT}/record/store`, {
-      fan: val
-    });
+  const switchFan = async () => {
+    const val = (data as any).fan == "0" ? 1 : 0;
+    await apiFacade.switchFan(val);
     refresh();
   };
 
@@ -99,7 +81,10 @@ export const Homepage = () => {
           <Image source={require('../../assets/images/light.png')} style={[{ width: 40, height: 40 }]} />
           <Text style={styles.text}>Đèn</Text>
           </View>
-          <TouchableOpacity style={styles.routineCell} onPress={swichlight} >
+          <TouchableOpacity style={[
+    styles.routineCell, 
+    { backgroundColor: (data as any) && (data as any).light == 1 ? 'orange' : '#FFE0BC' }
+  ]} onPress={switchLight} >
             <Text> {(data as any) ? ((data as any).light == 1 ? "On": "Off") : 'Loading...'} </Text>
           </TouchableOpacity>
         </View>
@@ -108,7 +93,10 @@ export const Homepage = () => {
           <Image source={require('../../assets/images/fan.png')} style={[{ width: 40, height: 40 }]} />
           <Text style={styles.text}>Quạt</Text>
           </View>
-          <TouchableOpacity style={styles.routineCell}>
+          <TouchableOpacity style={[
+    styles.routineCell, 
+    { backgroundColor: (data as any) && (data as any).fan == 1 ? 'orange' : '#FFE0BC' }
+  ]} onPress={switchFan}>
             <Text> {(data as any) ? ((data as any).fan != 0 ? "On": "Off") : 'Loading...'} </Text>
           </TouchableOpacity>
         </View>

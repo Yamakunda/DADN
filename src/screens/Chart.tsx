@@ -3,6 +3,7 @@ import { Dimensions, StyleSheet, View, Button, Text } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import axios from "axios";
+import { apiFacade } from './apiFacade';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { LineChart } from 'react-native-chart-kit';
 
@@ -12,8 +13,6 @@ type RootStackParamList = {
   Chart: undefined;
   // Add other screens here
 };
-const PORT = 3000;
-const HOST = '192.168.1.8';
 
 type NavigationProp = StackNavigationProp<RootStackParamList, 'Chart'>;
 export const Chart = () => {
@@ -42,13 +41,7 @@ export const Chart = () => {
   useEffect(() => {
     const getData = async () => {
       try {
-        const res = await axios.get(`http://${HOST}:${PORT}/chart`);
-        const labels = res.data.map((item: any) => {
-          const { month, day } = item._id;
-          return `${month}/${day}`;
-        });
-        const humidata = res.data.map((item: any) => Number(item.averageHumidity));
-        const tempdata = res.data.map((item: any) => Number(item.averageTemp));
+        const { labels, humidata, tempdata } = await apiFacade.getChartData();
         sethumiData({
           labels: labels,
           datasets: [
@@ -102,7 +95,7 @@ export const Chart = () => {
         <Text style={{ fontSize: 20, textAlign: 'center', fontWeight:"bold" }}>Biểu đồ độ ẩm 7 ngày qua</Text>
         <LineChart
           data={humidata}
-          width={Dimensions.get('window').width} // from react-native
+          width={Dimensions.get('window').width*0.9} // from react-native
           height={220}
           yAxisLabel={''}
           yAxisSuffix={'%'}
@@ -111,7 +104,7 @@ export const Chart = () => {
             backgroundColor: '#e26a00',
             backgroundGradientFrom: '#fb8c00',
             backgroundGradientTo: '#ffa726',
-            decimalPlaces: 2, // optional, defaults to 2dp
+            decimalPlaces: 1, // optional, defaults to 2dp
             color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
             labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
             style: {
@@ -134,16 +127,16 @@ export const Chart = () => {
         <Text style={{ fontSize: 20, textAlign: 'center', fontWeight:"bold"  }}>Biểu đồ nhiệt độ 7 ngày qua</Text>
         <LineChart
           data={tempdata}
-          width={Dimensions.get('window').width} // from react-native
+          width={Dimensions.get('window').width*0.9} // from react-native
           height={220}
           yAxisLabel={''}
-          yAxisSuffix={'độ C'}
+          yAxisSuffix={'\'C'}
           yAxisInterval={1} // optional, defaults to 1
           chartConfig={{
             backgroundColor: '#e26a00',
             backgroundGradientFrom: '#fb8c00',
             backgroundGradientTo: '#ffa726',
-            decimalPlaces: 2, // optional, defaults to 2dp
+            decimalPlaces: 1, // optional, defaults to 2dp
             color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
             labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
             style: {

@@ -2,15 +2,13 @@ import { StyleSheet, Image, Text, View, Dimensions, TextInput, TouchableOpacity 
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import React, { useState } from 'react';
-import axios from 'axios';
+import { apiFacade } from './apiFacade';
 type RootStackParamList = {
   Home: undefined;
   Login: undefined;
   Chart: undefined;
   // Add other screens here
 };
-const PORT = 3000;
-const HOST = '192.168.1.8';
 type NavigationProp = StackNavigationProp<RootStackParamList, 'Home'>;
 const deviceWidth = Dimensions.get('window').width;
 export const Login = () => {
@@ -20,17 +18,13 @@ export const Login = () => {
   const handleLogIn = async () => {
     console.log(username);
     console.log(password);
-    const res = await axios.post(`http://${HOST}:${PORT}/account/login`, {
-      username: username,
-      password: password,
-    });
-    if (res.data === "Login successfully") {
+    const res = await apiFacade.login(username, password);
+    if (res === "Login successfully") {
       navigation.navigate('Home');
       console.log("Logged In");
     } else {
       console.log("Sai tài khoản hoặc mật khẩu");
     }
-
   };
   const createAccount = () => {
     console.log("create account");
