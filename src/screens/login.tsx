@@ -1,44 +1,59 @@
 import { StyleSheet, Image, Text, View, Dimensions, TextInput, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-
+import React, { useState } from 'react';
+import axios from 'axios';
 type RootStackParamList = {
   Home: undefined;
   Login: undefined;
   Chart: undefined;
   // Add other screens here
 };
-
+const PORT = 3000;
+const HOST = '192.168.1.8';
 type NavigationProp = StackNavigationProp<RootStackParamList, 'Home'>;
 const deviceWidth = Dimensions.get('window').width;
 export const Login = () => {
   const navigation = useNavigation<NavigationProp>();
-  const handleSignIn = () => {
-    console.log("login");
-    navigation.navigate('Home');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const handleLogIn = async () => {
+    console.log(username);
+    console.log(password);
+    const res = await axios.post(`http://${HOST}:${PORT}/account/login`, {
+      username: username,
+      password: password,
+    });
+    if (res.data === "Login successfully") {
+      navigation.navigate('Home');
+      console.log("Logged In");
+    } else {
+      console.log("Sai tài khoản hoặc mật khẩu");
+    }
+
   };
   const createAccount = () => {
     console.log("create account");
   };
   return (
     <View style={styles.container}>
-      <Image 
-        source={require('../../assets/images/background.png')} 
-        style={{width: deviceWidth, height: 'auto', aspectRatio: 1.0,}} 
+      <Image
+        source={require('../../assets/images/background.png')}
+        style={{ width: deviceWidth, height: 'auto', aspectRatio: 1.0, }}
       />
       <View style={[styles.bottomView]}>
         <Text style={[styles.title,]}>Log In</Text>
-        <TextInput style={styles.input} placeholder="Username" />
-        <TextInput style={styles.input} placeholder="Password" secureTextEntry />
-        <TouchableOpacity style={[styles.button]} onPress={handleSignIn}>
-          <Text style={{textAlign: 'center', color: 'black', fontSize: 18, height: 30, fontWeight: "bold"}}>Log In</Text>
+        <TextInput style={styles.input} placeholder="Username" value={username} onChangeText={setUsername} />
+        <TextInput style={styles.input} placeholder="Password" secureTextEntry value={password} onChangeText={setPassword} />
+        <TouchableOpacity style={[styles.button]} onPress={handleLogIn}>
+          <Text style={{ textAlign: 'center', color: 'black', fontSize: 18, height: 30, fontWeight: "bold" }}>Log In</Text>
         </TouchableOpacity>
-        <Text style={{textAlign: 'center', color: 'black', fontSize: 14, height: 20}}>Don't have account yet ?</Text>  
+        <Text style={{ textAlign: 'center', color: 'black', fontSize: 14, height: 20 }}>Don't have account yet ?</Text>
         <TouchableOpacity style={[]} onPress={createAccount}>
-          <Text style={{textAlign: 'center', color: '#FDA43C', fontSize: 14, height: 20, textDecorationLine: "underline" }}>Create Account</Text>
-        </TouchableOpacity>      
+          <Text style={{ textAlign: 'center', color: '#FDA43C', fontSize: 14, height: 20, textDecorationLine: "underline" }}>Create Account</Text>
+        </TouchableOpacity>
       </View>
-      
+
     </View>
   );
 }
@@ -59,10 +74,10 @@ const styles = StyleSheet.create({
     margin: 12,
     borderWidth: 1,
     padding: 10,
-    width: deviceWidth *3/4,
+    width: deviceWidth * 3 / 4,
   },
   button: {
-    backgroundColor:'#FDA43C',
+    backgroundColor: '#FDA43C',
     height: 40,
     margin: 12,
     padding: 10,

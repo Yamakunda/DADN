@@ -1,8 +1,9 @@
 import { StyleSheet, Text, View, Image, TouchableOpacity,Button } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import 'react-native-gesture-handler';
 import axios from "axios";
+
+
 import { StackNavigationProp } from '@react-navigation/stack';
 type RootStackParamList = {
   Home: undefined;
@@ -11,7 +12,7 @@ type RootStackParamList = {
   // Add other screens here
 };
 const PORT = 3000;
-const HOST = '192.168.223.178';
+const HOST = '192.168.1.8';
 type NavigationProp = StackNavigationProp<RootStackParamList, 'Home'>;
 export const Homepage = () => {
   const navigation =  useNavigation<NavigationProp>();
@@ -19,7 +20,7 @@ export const Homepage = () => {
   const [data, setData] = useState(null);
   const refresh = async () =>{
     try {
-      const res = await axios.get('http://${HOST}:${PORT}:3000/record');
+      const res = await axios.get(`http://${HOST}:${PORT}/record`);
       console.log(res.data);
       setData(res.data);
     } catch (error) {
@@ -29,7 +30,7 @@ export const Homepage = () => {
   useEffect(() => {
     const getData = async () => {
       try {
-        const res = await axios.get('http://192.168.223.178:3000/record');
+        const res = await axios.get(`http://${HOST}:${PORT}/record`);
         console.log(res.data);
         setData(res.data);
       } catch (error) {
@@ -37,17 +38,21 @@ export const Homepage = () => {
       }
     };
     getData();
+    const intervalId = setInterval(getData, 10000);
+
+    // Clear the interval when the component unmounts
+    return () => clearInterval(intervalId);
   }, []);
   const swichlight = async () => {
     const val = (data as any).light == 0 ? 1 : 0;
-    const res = await axios.post("http://192.168.223.178:3000/record/store", {
+    const res = await axios.post(`http://${HOST}:${PORT}/record/store`, {
       light: val
     });
     refresh();
   };
   const swichfan = async () => {
     const val = (data as any).fan == 0 ? 100 : 0;
-    const res = await axios.post("http://192.168.223.178:3000/record/store", {
+    const res = await axios.post(`http://${HOST}:${PORT}/record/store`, {
       fan: val
     });
     refresh();
