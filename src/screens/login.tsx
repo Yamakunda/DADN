@@ -20,7 +20,7 @@ export const Login = () => {
     console.log(password);
     const res = await apiFacade.login(username, password);
     if (res === "Login successfully") {
-      navigation.navigate('Home');
+      navigation.replace('Home');
       console.log("Logged In");
     } else {
       console.log("Sai tài khoản hoặc mật khẩu");
@@ -69,13 +69,15 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     padding: 10,
     width: deviceWidth * 3 / 4,
+    borderRadius: 10,
   },
   button: {
     backgroundColor: '#FDA43C',
     height: 40,
     margin: 12,
     padding: 10,
-    justifyContent: 'center'
+    justifyContent: 'center',
+    borderRadius: 10,
   },
   bottomView: {
 

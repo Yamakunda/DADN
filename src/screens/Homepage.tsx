@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { apiFacade } from './apiFacade';
 import { StackNavigationProp } from '@react-navigation/stack';
-import Voice from '@react-native-voice/voice';
+import Slider from '@react-native-community/slider';
 type RootStackParamList = {
   Home: undefined;
   Login: undefined;
@@ -13,8 +13,6 @@ type RootStackParamList = {
 type NavigationProp = StackNavigationProp<RootStackParamList, 'Home'>;
 export const Homepage = () => {
   const navigation = useNavigation<NavigationProp>();
-  const [isRecording, setIsRecording] = React.useState(false);
-  const [result, setResult] = React.useState('Chưa có');
   const [data, setData] = useState(null);
   const refresh = async () => {
     try {
@@ -25,22 +23,18 @@ export const Homepage = () => {
     }
   }
   useEffect(() => {
-    Voice.onSpeechResults = onSpeechResultsHandler;
     refresh();
     const intervalId = setInterval(refresh, 10000);
     // Clear the interval when the component unmounts
     return () => {
       clearInterval(intervalId);
-      Voice.destroy().then(Voice.removeAllListeners);
     }
   }, []);
-  const switchLight = async () => {
-    const val = (data as any).light == "1" ? 0 : 1;
+  const switchLight = async (val: any) => {
     const res = await apiFacade.switchLight(val);
     setData(res);
   };
-  const switchFan = async () => {
-    const val = (data as any).fan == "0" ? 1 : 0;
+  const switchFan = async (val: any) => {
     const res = await apiFacade.switchFan(val);
     setData(res);
   };
@@ -49,33 +43,14 @@ export const Homepage = () => {
     const res = await apiFacade.switchDoor(val);
     setData(res);
   };
-  const startRecognize = async () => {
-    try {
-      await Voice.start('en-US');
-      setIsRecording(true);
-    } catch (e) {
-      console.error(e);
-    }    
-  }
-  const stopListening = async () => {
-    try {
-      await Voice.stop();
-      setIsRecording(false);
-    } catch (e) {
-      console.error(e);
-    }
-  };
-  const onSpeechResultsHandler = (e: any) => {
-    setResult(e.value[0]); // e.value is an array of recognized words
-  };
   return (
     <View style={styles.container}>
-      <View style={[styles.row, { marginTop: 40, paddingVertical: 40 }]}>
+      <View style={[styles.row, { marginTop: 10, paddingVertical: 10 }]}>
         <Image source={require('../../assets/images/Avatar(2).png')} style={[{ width: 40, height: 40 }]} />
         <Text style={{ color: 'black', fontSize: 24, height: 40, fontWeight: "bold" }}>  Nguyễn Văn A</Text>
       </View>
       <View>
-        <Text>Last fetch: {(data as any) ? (data as any).time : 'Loading...'}</Text>
+        <Text>Last fetch: {(data as any) ? (data as any).time : 'Wait'}</Text>
         <TouchableOpacity style={styles.row} >
           <Text>Refresh</Text>
           <TouchableOpacity onPress={refresh}>
@@ -87,69 +62,101 @@ export const Homepage = () => {
         <View style={[styles.row, styles.cell]}>
           <View style={styles.row}>
             <Text style={styles.sub}>Room Temp</Text>
-            <Image source={require('../../assets/images/temp.png')} style={[{ marginLeft: - 20, width: 20, height: 20 }]} />
+            <Image source={require('../../assets/images/temp.png')} style={[{ marginLeft: -10, width: 20, height: 20 }]} />
           </View>
-          <Text style={[styles.main,]}>{(data as any) ? (data as any).temp : 'Loading...'} độ C</Text>
+          <Text style={[styles.main,]}>{(data as any) ? (data as any).temp : 'Wait'} độ C</Text>
         </View>
       </View>
       <View style={[styles.table, { marginTop: 20 }]}>
         <View style={[styles.row, styles.cell]}>
           <View style={styles.row}>
             <Text style={styles.sub}>Humidity</Text>
-            <Image source={require('../../assets/images/humid.png')} style={[{ marginLeft: - 20, width: 20, height: 20 }]} />
+            <Image source={require('../../assets/images/humid.png')} style={[{ marginLeft: - 30, width: 20, height: 20 }]} />
           </View>
-          <Text style={styles.main}>{(data as any) ? (data as any).humidity : 'Loading...'}%</Text>
+          <Text style={styles.main}>{(data as any) ? (data as any).humidity : 'Wait'}%</Text>
         </View>
       </View>
       <View style={[styles.table, { marginTop: 20 }]}>
         <View style={[styles.row, styles.cell]}>
           <View style={styles.row}>
             <Text style={styles.sub}>Độ sáng</Text>
-            <Image source={require('../../assets/images/lux.png')} style={[{ marginLeft: - 20, width: 20, height: 20 }]} />
+            <Image source={require('../../assets/images/lux.png')} style={[{ marginLeft: -30, width: 20, height: 20 }]} />
           </View>
-          <Text style={styles.main}>{(data as any) ? (data as any).lux : 'Loading...'} lux</Text>
+          <Text style={styles.main}>{(data as any) ? (data as any).lux : 'Wait'} lux</Text>
         </View>
       </View>
-      <Text style={{ marginTop: 10, marginRight: 220, color: 'black', fontSize: 18, height: 30, fontWeight: "bold" }}>Device</Text>
+      <Text style={{ marginVertical: 10, marginRight: 220, color: 'black', fontSize: 18, height: 30, fontWeight: "bold" }}>Thiết bị</Text>
       <View style={styles.routineTable}>
-        <View style={[styles.row, { width: 250 }]}>
-          <View style={styles.row}>
+        <View style={[styles.rowns, { marginBottom: 10 }]}>
+          <View style={[styles.rowns, { marginRight: 40 }]}>
             <Image source={require('../../assets/images/light.png')} style={[{ width: 40, height: 40 }]} />
             <Text style={styles.text}>Đèn</Text>
           </View>
           <TouchableOpacity style={[
             styles.routineCell,
+            { backgroundColor: (data as any) && (data as any).light == 0 ? 'orange' : '#FFE0BC', borderTopLeftRadius: 10, borderBottomLeftRadius: 10 }
+          ]} onPress={() => {
+            switchLight(0);
+          }} >
+            <Text> {(data as any) ? "Tắt" : 'Wait'} </Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={[
+            styles.routineCell,
             { backgroundColor: (data as any) && (data as any).light == 1 ? 'orange' : '#FFE0BC' }
-          ]} onPress={switchLight} >
-            <Text> {(data as any) ? ((data as any).light == 1 ? "On" : "Off") : 'Loading...'} </Text>
+          ]} onPress={() => {
+            switchLight(1);
+          }} >
+            <Text> {(data as any) ? "Trắng" : 'Wait'} </Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={[
+            styles.routineCell,
+            { backgroundColor: (data as any) && (data as any).light == 2 ? 'orange' : '#FFE0BC' }
+          ]} onPress={() => {
+            switchLight(2);
+          }} >
+            <Text> {(data as any) ? "Xanh" : 'Wait'} </Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={[
+            styles.routineCell,
+            { backgroundColor: (data as any) && (data as any).light == 3 ? 'orange' : '#FFE0BC', borderTopRightRadius: 10, borderBottomRightRadius: 10 }
+          ]} onPress={() => {
+            switchLight(3);
+          }} >
+            <Text> {(data as any) ? "Đỏ" : 'Wait'} </Text>
           </TouchableOpacity>
         </View>
-        <View style={styles.row}>
+        <View style={[styles.rowns, { marginBottom: 10 }]}>
           <View style={styles.row}>
             <Image source={require('../../assets/images/fan.png')} style={[{ width: 40, height: 40 }]} />
             <Text style={styles.text}>Quạt</Text>
           </View>
-          <TouchableOpacity style={[
-            styles.routineCell,
-            { backgroundColor: (data as any) && (data as any).fan == 1 ? 'orange' : '#FFE0BC' }
-          ]} onPress={switchFan}>
-            <Text> {(data as any) ? ((data as any).fan != 0 ? "On" : "Off") : 'Loading...'} </Text>
-          </TouchableOpacity>
+          <Slider style={{ width: 200, height: 40, marginLeft: 25 }}
+            value={(data && (data as any).fan) || 0}
+            onValueChange={(value) => switchFan(value)}
+            minimumValue={0}
+            maximumValue={4}
+            step={1}
+          />
         </View>
 
-        <View style={styles.row}>
-          <View style={styles.row}>
+        <View style={[styles.rowns, { marginBottom: 20 }]}>
+          <View style={[styles.rowns, { marginRight: 80 }]}>
             <Image source={require('../../assets/images/door.png')} style={[{ width: 40, height: 40 }]} />
             <Text style={styles.text}>Cửa</Text>
           </View>
           <TouchableOpacity style={[
-            styles.routineCell,
-            { backgroundColor: (data as any) && (data as any).door == 1 ? 'orange' : '#FFE0BC' }
+            {
+              backgroundColor: (data as any) && (data as any).door == 1 ? 'orange' : '#FFE0BC', borderWidth: 1,
+              width: 100,
+              height: 30,
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: 10,
+            }
           ]} onPress={switchDoor}>
-            <Text> {(data as any) ? ((data as any).door != 0 ? "Open" : "Close") : 'Loading...'} </Text>
+            <Text> {(data as any) ? ((data as any).door != 0 ? "Mở" : "Đóng") : 'Wait'} </Text>
           </TouchableOpacity>
         </View>
-
         {/* <View style={styles.row}>
           <View style={styles.row}>
             <Image source={require('../../assets/images/speak.jpg')} style={[{ width: 40, height: 40 }]} />
@@ -164,9 +171,13 @@ export const Homepage = () => {
         <Text>{result}</Text> */}
       </View>
 
-      <View style={{ position: 'absolute', bottom: 20, flexDirection: 'row', justifyContent: 'space-around', marginTop: 20, width: 200 }}>
-        <Button title="Home" onPress={() => { navigation.navigate("Home") }} />
-        <Button title="Chart" onPress={() => { navigation.navigate("Chart") }} />
+      <View style={{ position: 'absolute', left: 100, right: 0, bottom: 20, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', width: 200 }}>
+        <TouchableOpacity style={{ backgroundColor: '#FDA43C', padding: 10, borderWidth : 1, borderColor: '#000', borderTopLeftRadius: 10, borderBottomLeftRadius: 10}} onPress={() => { navigation.navigate("Home") }}>
+          <Text style={{ }}>Home</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={{ backgroundColor: '#FDA43C', padding: 10, borderWidth : 1, borderColor: '#000', borderTopRightRadius: 10, borderBottomRightRadius: 10 }} onPress={() => { navigation.navigate("Chart") }}>
+          <Text style={{ }}>Chart</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -192,9 +203,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
   },
+  rowns: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    // justifyContent: 'space-between',
+  },
   cell: {
     width: 300,
-    height: 60,
+    height: 50,
     alignItems: 'center',
     backgroundColor: "#fff",
 
@@ -202,9 +218,12 @@ const styles = StyleSheet.create({
   main: {
     fontWeight: 'bold',
     fontSize: 20,
+    marginRight: 20,
   },
   sub: {
     width: 100,
+    marginLeft: 10,
+    fontSize: 16,
   },
   roomtable: {
 
@@ -225,24 +244,22 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFE0BC"
   },
   routineTable: {
-    paddingVertical: 10,
     flexDirection: 'column',
     backgroundColor: "#fff",
   },
   routineCell: {
     borderWidth: 1,
     borderColor: '#000',
-    margin: 10,
-    width: 80,
+    width: 45,
     height: 30,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 10,
+    // borderRadius: 10,
     flexDirection: 'row',
     backgroundColor: "#FFE0BC"
   },
   text: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
     color: 'black',
     marginLeft: 10,

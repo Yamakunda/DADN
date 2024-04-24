@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const PORT = 3000;
-const HOST = '192.168.58.178';
+const HOST = '192.168.1.6';
 
 export const apiFacade = {
   async login(username: string, password: string) {
