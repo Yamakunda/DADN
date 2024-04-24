@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const PORT = 3000;
-const HOST = '192.168.1.5';
+const HOST = '192.168.58.178';
 
 export const apiFacade = {
   async login(username: string, password: string) {
@@ -16,14 +16,22 @@ export const apiFacade = {
     return res.data;
   },
   async switchLight(value: number) {
-    return await axios.post(`http://${HOST}:${PORT}/record/store`, {
+    const res =  await axios.post(`http://${HOST}:${PORT}/record/store`, {
       light: value
     });
+    return res.data;
   },
   async switchFan(value: number) {
-    return await axios.post(`http://${HOST}:${PORT}/record/store`, {
+    const res = await axios.post(`http://${HOST}:${PORT}/record/store`, {
       fan: value
     });
+    return res.data;
+  },
+  async switchDoor(value: number) {
+    const res = await axios.post(`http://${HOST}:${PORT}/record/store`, {
+      door: value
+    });
+    return res.data;
   },
   async getChartData() {
     const res = await axios.get(`http://${HOST}:${PORT}/chart`);
