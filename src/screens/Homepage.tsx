@@ -4,6 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import { apiFacade } from './apiFacade';
 import { StackNavigationProp } from '@react-navigation/stack';
 import Slider from '@react-native-community/slider';
+import {Notifications} from 'react-native-notifications';
 type RootStackParamList = {
   Home: undefined;
   Login: undefined;
@@ -11,13 +12,28 @@ type RootStackParamList = {
   // Add other screens here
 };
 type NavigationProp = StackNavigationProp<RootStackParamList, 'Home'>;
-export const Homepage = () => {
+export const Homepage = (account: any) => {
   const navigation = useNavigation<NavigationProp>();
   const [data, setData] = useState(null);
+  const nickname = account.route.params.nickname;
   const refresh = async () => {
+
     try {
       const data = await apiFacade.getRecord();
       setData(data);
+    //   Notifications.setNotificationChannel({
+    //     channelId: 'my-channel',
+    //     name: 'My Channel',
+    //     importance: 5,
+    //     description: 'My Description',
+    //     enableLights: true,
+    //     enableVibration: true,
+    //     groupId: 'my-group', // optional
+    //     groupName: 'My Group', // optional, will be presented in Android OS notification permission
+    //     showBadge: true,
+    //     // soundFile: 'custom_sound.mp3',  // place this in <project_root>/android/app/src/main/res/raw/custom_sound.mp3
+    //     vibrationPattern: [200, 1000, 500, 1000, 500],
+    // })
     } catch (error) {
       console.error(error);
     }
@@ -43,14 +59,17 @@ export const Homepage = () => {
     const res = await apiFacade.switchDoor(val);
     setData(res);
   };
+  const dateTime = new Date((data as any)?.time);
+  const date = `${dateTime.getFullYear()}-${dateTime.getMonth()+1}-${dateTime.getDate()}`;
+  const time = `${(dateTime.getHours()+17 < 24 ? dateTime.getHours()+17 : dateTime.getHours()-7)}:${dateTime.getMinutes()}:${dateTime.getSeconds()}`;
   return (
     <View style={styles.container}>
       <View style={[styles.row, { marginTop: 10, paddingVertical: 10 }]}>
         <Image source={require('../../assets/images/Avatar(2).png')} style={[{ width: 40, height: 40 }]} />
-        <Text style={{ color: 'black', fontSize: 24, height: 40, fontWeight: "bold" }}>  Nguyễn Văn A</Text>
+        <Text style={{ color: 'black', fontSize: 24, height: 40, fontWeight: "bold" }}>  {nickname}</Text>
       </View>
       <View>
-        <Text>Last fetch: {(data as any) ? (data as any).time : 'Wait'}</Text>
+      <Text>Cập nhật cuối: {time} {date}</Text>
         <TouchableOpacity style={styles.row} >
           <Text>Refresh</Text>
           <TouchableOpacity onPress={refresh}>
@@ -172,10 +191,10 @@ export const Homepage = () => {
       </View>
 
       <View style={{ position: 'absolute', left: 100, right: 0, bottom: 20, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', width: 200 }}>
-        <TouchableOpacity style={{ backgroundColor: '#FDA43C', padding: 10, borderWidth : 1, borderColor: '#000', borderTopLeftRadius: 10, borderBottomLeftRadius: 10}} onPress={() => { navigation.navigate("Home") }}>
+        <TouchableOpacity style={{ backgroundColor: '#FDA43C', padding: 10, borderWidth : 1, borderColor: '#000', borderTopLeftRadius: 10, borderBottomLeftRadius: 10}} onPress={() => { navigation.navigate("Home",account.route.params) }}>
           <Text style={{ }}>Home</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={{ backgroundColor: '#FDA43C', padding: 10, borderWidth : 1, borderColor: '#000', borderTopRightRadius: 10, borderBottomRightRadius: 10 }} onPress={() => { navigation.navigate("Chart") }}>
+        <TouchableOpacity style={{ backgroundColor: '#FDA43C', padding: 10, borderWidth : 1, borderColor: '#000', borderTopRightRadius: 10, borderBottomRightRadius: 10 }} onPress={() => { navigation.navigate("Chart",account.route.params) }}>
           <Text style={{ }}>Chart</Text>
         </TouchableOpacity>
       </View>

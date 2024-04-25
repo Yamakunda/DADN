@@ -1,5 +1,5 @@
 
-import { Dimensions, StyleSheet, View, Button, Text } from 'react-native';
+import { Dimensions, StyleSheet, View, Button, Text, TouchableOpacity } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import axios from "axios";
@@ -15,7 +15,7 @@ type RootStackParamList = {
 };
 
 type NavigationProp = StackNavigationProp<RootStackParamList, 'Chart'>;
-export const Chart = () => {
+export const Chart = (account: any) => {
   const navigation = useNavigation<NavigationProp>();
   const [humidata, sethumiData] = useState({
     labels: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"],
@@ -37,11 +37,21 @@ export const Chart = () => {
       },
     ],
   });
+  const [luxdata, setluxData] = useState({
+    labels: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"],
+    datasets: [
+      {
+        data: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+        color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`, // optional
+        strokeWidth: 2, // optional
+      },
+    ],
+  });
 
   useEffect(() => {
     const getData = async () => {
       try {
-        const { labels, humidata, tempdata } = await apiFacade.getChartData();
+        const { labels, humidata, tempdata, luxdata } = await apiFacade.getChartData();
         sethumiData({
           labels: labels,
           datasets: [
@@ -82,6 +92,26 @@ export const Chart = () => {
             },
           ],
         });
+        setluxData({
+          labels: labels,
+          datasets: [
+            {
+              data: luxdata,
+              color: (opacity = 1) => `rgba(255, 0, 0, ${opacity})`, // optional
+              strokeWidth: 2,
+            },
+            {
+              data: labels.map(() => 40), // invisible dataset,
+              color: () => 'rgba(0, 0, 0, 0)', // invisible color
+              strokeWidth: 0,
+            },
+            {
+              data: labels.map(() => 20), // invisible dataset,
+              color: () => 'rgba(0, 0, 0, 0)', // invisible color
+              strokeWidth: 0,
+            },
+          ],
+        });
       } catch (error) {
         console.error(error);
       }
@@ -96,12 +126,12 @@ export const Chart = () => {
         <LineChart
           data={humidata}
           width={Dimensions.get('window').width*0.9} // from react-native
-          height={220}
+          height={180}
           yAxisLabel={''}
           yAxisSuffix={'%'}
           yAxisInterval={1} // optional, defaults to 1
           chartConfig={{
-            backgroundColor: '#e26a00',
+            backgroundColor: '#000000',
             backgroundGradientFrom: '#fb8c00',
             backgroundGradientTo: '#ffa726',
             decimalPlaces: 1, // optional, defaults to 2dp
@@ -128,7 +158,7 @@ export const Chart = () => {
         <LineChart
           data={tempdata}
           width={Dimensions.get('window').width*0.9} // from react-native
-          height={220}
+          height={180}
           yAxisLabel={''}
           yAxisSuffix={'\'C'}
           yAxisInterval={1} // optional, defaults to 1
@@ -155,10 +185,46 @@ export const Chart = () => {
           }}
         />
       </View>
-      <View style={{ position: 'absolute', bottom: 20, flexDirection: 'row', justifyContent: 'space-around', marginTop: 20, width: 200 }}>
-        <Button title="Home" onPress={() => { navigation.navigate("Home") }} />
-        <Button title="Chart" onPress={() => { navigation.navigate("Chart") }} />
-      </View> 
+      <View>
+        <Text style={{ fontSize: 20, textAlign: 'center', fontWeight:"bold"  }}>Biểu đồ ánh sáng cảm biến 7 ngày qua</Text>
+        <LineChart
+          data={luxdata}
+          width={Dimensions.get('window').width*0.9} // from react-native
+          height={180}
+          yAxisLabel={''}
+          yAxisSuffix={'\'C'}
+          yAxisInterval={1} // optional, defaults to 1
+          chartConfig={{
+            backgroundColor: '#e26a00',
+            backgroundGradientFrom: '#fb8c00',
+            backgroundGradientTo: '#ffa726',
+            decimalPlaces: 1, // optional, defaults to 2dp
+            color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+            labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+            style: {
+              borderRadius: 16,
+            },
+            propsForDots: {
+              r: '6',
+              strokeWidth: '2',
+              stroke: '#ffa726',
+            },
+          }}
+          bezier
+          style={{
+            marginVertical: 8,
+            borderRadius: 16,
+          }}
+        />
+      </View>
+      <View style={{ position: 'absolute', left: 100, right: 0, bottom: 20, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', width: 200 }}>
+        <TouchableOpacity style={{ backgroundColor: '#FDA43C', padding: 10, borderWidth : 1, borderColor: '#000', borderTopLeftRadius: 10, borderBottomLeftRadius: 10}} onPress={() => { navigation.navigate("Home",account.route.params) }}>
+          <Text style={{ }}>Home</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={{ backgroundColor: '#FDA43C', padding: 10, borderWidth : 1, borderColor: '#000', borderTopRightRadius: 10, borderBottomRightRadius: 10 }} onPress={() => { navigation.navigate("Chart",account.route.params) }}>
+          <Text style={{ }}>Chart</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }

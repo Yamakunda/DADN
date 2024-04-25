@@ -1,4 +1,4 @@
-import { StyleSheet, Image, Text, View, Dimensions, TextInput, TouchableOpacity,Alert } from 'react-native';
+import { StyleSheet, Image, Text, View, Dimensions, TextInput, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import React, { useState } from 'react';
@@ -12,24 +12,25 @@ type RootStackParamList = {
 };
 type NavigationProp = StackNavigationProp<RootStackParamList, 'Home'>;
 const deviceWidth = Dimensions.get('window').width;
-export const Login = () => {
+export const Signup = () => {
   const navigation = useNavigation<NavigationProp>();
+  const [nickname, setNickname] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const handleLogIn = async () => {
-    const res = await apiFacade.login(username, password);
-    console.log(res);
-    if (res != "No matching documents") {
-      navigation.replace('Home', res);
-      console.log("Logged In");
+  const handleSignUp = async () => {
+    console.log(username);
+    console.log(nickname);
+    console.log(password);
+    const res = await apiFacade.signup(username,nickname,password);
+    if (res != "Existing Account") {
+      console.log("Can't create account");
     } else {
-      console.log("Sai tài khoản hoặc mật khẩu");
-      Alert.alert("Error", "Sai tài khoản hoặc mật khẩu");
+      console.log("Created Account");
     }
   };
-  const createAccount = () => {
-    navigation.navigate('Signup');
-  };
+  const login = () => {
+    navigation.replace('Login');
+  }
   return (
     <View style={styles.container}>
       <Image
@@ -37,15 +38,16 @@ export const Login = () => {
         style={{ width: deviceWidth, height: 'auto', aspectRatio: 1.0, }}
       />
       <View style={[styles.bottomView]}>
-        <Text style={[styles.title,]}>Log In</Text>
+        <Text style={[styles.title,]}>Sign Up</Text>
         <TextInput style={styles.input} placeholder="Username" value={username} onChangeText={setUsername} />
+        <TextInput style={styles.input} placeholder="Nickname" value={nickname} onChangeText={setNickname} />
         <TextInput style={styles.input} placeholder="Password" secureTextEntry value={password} onChangeText={setPassword} />
-        <TouchableOpacity style={[styles.button]} onPress={handleLogIn}>
-          <Text style={{ textAlign: 'center', color: 'black', fontSize: 18, height: 30, fontWeight: "bold" }}>Log In</Text>
+        <TouchableOpacity style={[styles.button]} onPress={handleSignUp}>
+          <Text style={{ textAlign: 'center', color: 'black', fontSize: 18, height: 30, fontWeight: "bold" }}>Sign Up</Text>
         </TouchableOpacity>
-        <Text style={{ textAlign: 'center', color: 'black', fontSize: 14, height: 20 }}>Don't have account yet ?</Text>
-        <TouchableOpacity style={[]} onPress={createAccount}>
-          <Text style={{ textAlign: 'center', color: '#FDA43C', fontSize: 14, height: 20, textDecorationLine: "underline" }}>Create Account</Text>
+        <Text style={{ textAlign: 'center', color: 'black', fontSize: 14, height: 20 }}>Have account yet ?</Text>
+        <TouchableOpacity style={[]} onPress={login}>
+          <Text style={{ textAlign: 'center', color: '#FDA43C', fontSize: 14, height: 20, textDecorationLine: "underline" }}>Log In</Text>
         </TouchableOpacity>
       </View>
 

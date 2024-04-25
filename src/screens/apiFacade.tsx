@@ -1,12 +1,20 @@
 import axios from 'axios';
 
 const PORT = 3000;
-const HOST = '192.168.1.6';
+const HOST = '192.168.229.178';
 
 export const apiFacade = {
   async login(username: string, password: string) {
     const res = await axios.post(`http://${HOST}:${PORT}/account/login`, {
       username,
+      password,
+    });
+    return res.data;
+  },
+  async signup(username: string,nickname: string, password: string) {
+    const res = await axios.post(`http://${HOST}:${PORT}/account/signup`, {
+      username,
+      nickname,
       password,
     });
     return res.data;
@@ -41,7 +49,8 @@ export const apiFacade = {
     });
     const humidata = res.data.map((item: any) => Number(item.averageHumidity));
     const tempdata = res.data.map((item: any) => Number(item.averageTemp));
-    return { labels, humidata, tempdata };
+    const luxdata = res.data.map((item: any) => Number(item.averageLux));
+    return { labels, humidata, tempdata, luxdata };
   },
 
 };
